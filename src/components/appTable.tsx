@@ -1,16 +1,34 @@
 import { db, useTasks } from "@/lib/db";
 import { ScrollArea } from "./ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
-import { Checkbox } from "./ui/checkbox";
-import { Button } from "./ui/button";
-import { Trash } from "lucide-react";
+import DraggableRow from "./draggableRow";
+import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
+import { useMemo } from "react";
 
 const AppTable = () => {
     const tasks = useTasks();
-    const onDelete = (id?: number) => {
-        if (!id) return;
-        db.tasks.delete(id);
+
+    const taskIds = useMemo(() => tasks?.map((t) => t.id as number) || [], [tasks]);
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (active.id !== over?.id && tasks) {
+            const oldIndex = tasks.findIndex((t) => t.id === active.id);
+            const newIndex = tasks.findIndex((t) => t.id === over?.id);
+
+            const newOrder = arrayMove(tasks, oldIndex, newIndex);
+
+            // Update order in DB
+            newOrder.forEach((task, index) => {
+                if (task.id) {
+                    db.tasks.update(task.id, { order: index });
+                }
+            });
+        }
     }
+
     return <div className="mt-10 w-full rounded-md border">
         {/* Header */}
         <Table className="table-fixed w-full">
@@ -22,37 +40,20 @@ const AppTable = () => {
             </TableHeader>
         </Table>
 
-        {/* Scrollable body */}
-        <ScrollArea className="h-64">
-            <Table className="table-fixed w-full">
-                <TableBody>
-                    {tasks?.map((task, index) => (
-                        <TableRow key={index}>
-                            <TableCell className="w-[80%]">{task.description}</TableCell>
-                            <TableCell className="w-[20%]">
-                                <div className="flex items-center justify-center gap-2">
-                                    <Checkbox
-                                        checked={task.completed}
-                                        onCheckedChange={(checked) => {
-                                            if (!task.id) return;
-                                            db.tasks.update(task.id, { completed: !!checked });
-                                        }}
-                                    />
-                                    <Button
-                                        variant="destructive"
-                                        size="icon"
-                                        aria-label="Delete task"
-                                        onClick={() => onDelete(task.id)}
-                                    >
-                                        <Trash />
-                                    </Button>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </ScrollArea>
+        {/* Scrollable and sortable body */}
+        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <ScrollArea className="h-64">
+                <Table className="table-fixed w-full">
+                    <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+                        <TableBody>
+                            {tasks?.map((task) => (
+                                <DraggableRow key={task.id} task={task} />
+                            ))}
+                        </TableBody>
+                    </SortableContext>
+                </Table>
+            </ScrollArea>
+        </DndContext>
     </div>
 }
 

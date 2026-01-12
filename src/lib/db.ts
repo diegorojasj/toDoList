@@ -8,7 +8,7 @@ class AppDB extends Dexie {
     constructor() {
         super("AppDB");
         this.version(1).stores({
-            tasks: "++id, description, completed"
+            tasks: "++id, description, completed, order"
         });
     }
 }
@@ -17,9 +17,10 @@ export interface Task {
     id?: number;
     description: string;
     completed: boolean;
+    order: number;
 }
 
 
 export const db = new AppDB();
 
-export const useTasks = () => useLiveQuery(() => db.tasks.toArray());
+export const useTasks = () => useLiveQuery(() => db.tasks.orderBy("order").toArray());

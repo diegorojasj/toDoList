@@ -7,8 +7,9 @@ import { useState } from "react";
 
 const AppForm = () => {
     const [input, setInput] = useState("");
-    const onAdd = () => {
-        db.tasks.add({ description: input, completed: false });
+    const onAdd = async () => {
+        const tasks = await db.tasks.toArray()
+        db.tasks.add({ description: input, completed: false, order: tasks.length + 1 });
         setInput("");
     }
     return <form onSubmit={(e) => { e.preventDefault(); onAdd() }}>
