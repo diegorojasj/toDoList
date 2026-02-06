@@ -43,7 +43,7 @@ const AppTable = () => {
         {/* Scrollable and sortable body */}
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <ScrollArea className="h-64">
-                <Table className="table-fixed w-full">
+                <Table className="table-fixed w-full overflow-hidden">
                     <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
                         <TableBody>
                             {tasks?.map((task) => (

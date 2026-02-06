@@ -28,7 +28,7 @@ import AppTable from "./components/appTable";
 export function App() {
   return (
     <>
-      <H3 className="absolute top-30 left-1/2 transform -translate-x-1/2">TO DO LIST</H3>
+      <H3 className="text-center">TO DO LIST</H3>
       <div className="container mx-auto p-8 text-center relative z-10">
         {/* Form */}
         <AppForm />

@@ -34,9 +34,12 @@ const DraggableRow = ({ task }: { task: Task }) => {
         >
             <TableCell className="w-[80%]">{task.description}</TableCell>
             <TableCell className="w-[20%]">
-                <div className="flex items-center justify-center gap-2">
+                <div
+                    className="flex items-center justify-center gap-2"
+                >
                     <Checkbox
                         checked={task.completed}
+                        onPointerDown={(e) => e.stopPropagation()}
                         onCheckedChange={(checked) => {
                             if (!task.id) return;
                             db.tasks.update(task.id, { completed: !!checked });
@@ -46,6 +49,7 @@ const DraggableRow = ({ task }: { task: Task }) => {
                         variant="destructive"
                         size="icon"
                         aria-label="Delete task"
+                        onPointerDown={(e) => e.stopPropagation()}
                         onClick={() => onDelete(task.id)}
                     >
                         <Trash />
